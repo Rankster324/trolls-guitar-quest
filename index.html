@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Troll's Guitar Quest</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --pink: #ff6b9d;
+  --purple: #c44dff;
+  --blue: #4dabff;
+  --green: #4dff88;
+  --yellow: #ffd84d;
+  --orange: #ff8c4d;
+  --dark: #1a1a2e;
+  --darker: #16213e;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--dark);
+  color: white;
+  overflow: hidden;
+  height: 100dvh;
+  width: 100vw;
+  touch-action: manipulation;
+}
+
+/* ===== SCREENS ===== */
+.screen {
+  display: none;
+  width: 100%;
+  height: 100dvh;
+  position: absolute;
+  top: 0; left: 0;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+.screen.active { display: flex; }
+
+/* ===== TITLE SCREEN ===== */
+#title-screen {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  justify-content: center;
+  gap: 20px;
+  text-align: center;
+  padding: 20px;
+}
+
+.title-stars {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle var(--dur) ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.title-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--pink);
+  box-shadow: 0 0 30px rgba(255, 107, 157, 0.5);
+  z-index: 1;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.title-text {
+  z-index: 1;
+}
+
+.title-text h1 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2.2em;
+  background: linear-gradient(135deg, var(--pink), var(--purple), var(--blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  line-height: 1.1;
+}
+
+.title-text p {
+  font-size: 1em;
+  color: #aab;
+  margin-top: 8px;
+}
+
+.play-btn {
+  z-index: 1;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  border: none;
+  color: white;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.4em;
+  padding: 16px 50px;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(196, 77, 255, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.play-btn:active {
+  transform: scale(0.95) !important;
+  box-shadow: 0 4px 15px rgba(196, 77, 255, 0.3);
+}
+
+/* ===== HUB / MAP SCREEN ===== */
+#hub-screen {
+  background: linear-gradient(180deg, #0f3460 0%, #1a1a2e 100%);
+}
+
+.hub-header {
+  width: 100%;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.coin-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,216,77,0.15);
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 2px solid var(--yellow);
+}
+
+.coin-icon { font-size: 1.2em; }
+.coin-amount {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.1em;
+  color: var(--yellow);
+}
+
+.guitar-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-bar-bg {
+  width: 100px;
+  height: 12px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pink), var(--purple));
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+
+.guitar-icon { font-size: 1.3em; }
+
+.hub-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.3em;
+  text-align: center;
+  padding: 12px;
+  color: var(--blue);
+}
+
+.quest-grid {
+  flex: 1;
+  width: 100%;
+  padding: 8px 16px 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  overflow-y: auto;
+  align-content: start;
+}
+
+.quest-card {
+  background: rgba(255,255,255,0.06);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.quest-card:active {
+  transform: scale(0.96);
+}
+
+.quest-card.unlocked {
+  border-color: var(--purple);
+  background: rgba(196, 77, 255, 0.08);
+}
+
+.quest-card.locked {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.quest-card.completed {
+  border-color: var(--green);
+  background: rgba(77, 255, 136, 0.08);
+}
+
+.quest-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.2);
+}
+
+.quest-card.locked .quest-photo {
+  filter: grayscale(1) blur(2px);
+}
+
+.quest-name {
+  font-weight: 800;
+  font-size: 0.85em;
+  line-height: 1.2;
+}
+
+.quest-reward {
+  font-size: 0.75em;
+  color: var(--yellow);
+  font-weight: 700;
+}
+
+.quest-badge {
+  font-size: 0.7em;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.quest-card.completed .quest-badge {
+  background: rgba(77, 255, 136, 0.2);
+  color: var(--green);
+}
+
+.quest-card.unlocked .quest-badge {
+  background: rgba(77, 171, 255, 0.2);
+  color: var(--blue);
+}
+
+/* ===== GUITAR SHOP ===== */
+.guitar-shop-card {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(255,107,157,0.15), rgba(196,77,255,0.15));
+  border: 2px solid var(--pink);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.guitar-shop-card:active { transform: scale(0.97); }
+
+.guitar-shop-card .shop-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.1em;
+  color: var(--pink);
+}
+
+.guitar-shop-card .shop-desc {
+  font-size: 0.8em;
+  color: #aab;
+  margin-top: 4px;
+}
+
+/* ===== GAME SCREENS ===== */
+.game-header {
+  width: 100%;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0,0,0,0.4);
+  z-index: 10;
+}
+
+.back-btn {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: white;
+  font-size: 1.2em;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.game-coins {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Fredoka One', cursive;
+  color: var(--yellow);
+}
+
+.game-timer {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.1em;
+  color: var(--orange);
+}
+
+.game-area {
+  flex: 1;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.game-instruction {
+  text-align: center;
+  padding: 10px;
+  font-weight: 700;
+  font-size: 0.9em;
+  color: var(--blue);
+  background: rgba(0,0,0,0.3);
+}
+
+/* ===== GAME 1: NOODLE STACKER ===== */
+#noodle-game {
+  background: linear-gradient(180deg, #2d1b4e 0%, #1a1a2e 100%);
+}
+
+.noodle-stack-area {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.noodle-packet {
+  position: absolute;
+  width: 70px;
+  height: 50px;
+  background: linear-gradient(135deg, #ff4444, #cc0000);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: none;
+  border: 2px solid #ff6666;
+}
+
+.noodle-moving {
+  animation: slideNoodle 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes slideNoodle {
+  0% { left: 5%; }
+  100% { left: calc(100% - 75px); }
+}
+
+.tap-zone {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(0deg, rgba(196,77,255,0.3), transparent);
+  z-index: 5;
+}
+
+.tap-btn {
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  border: none;
+  color: white;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2em;
+  padding: 14px 40px;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(196, 77, 255, 0.4);
+}
+
+.tap-btn:active { transform: scale(0.93); }
+
+/* ===== GAME 2: FRY CATCHER ===== */
+#fry-game {
+  background: linear-gradient(180deg, #4a1a1a 0%, #1a1a2e 100%);
+}
+
+.fry-area {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.fry {
+  position: absolute;
+  font-size: 2em;
+  transition: none;
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.fry-catcher {
+  position: absolute;
+  bottom: 60px;
+  width: 70px;
+  height: 55px;
+  background: linear-gradient(135deg, #ff4444, #cc0000);
+  border-radius: 4px 4px 8px 8px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6em;
+  font-weight: 800;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: left 0.1s ease;
+  border: 2px solid #ff6666;
+}
+
+/* ===== GAME 3: TREE CLIMBER ===== */
+#climb-game {
+  background: linear-gradient(180deg, #1a3a1a 0%, #1a1a2e 100%);
+}
+
+.climb-area {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.tree-trunk {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  bottom: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #5a3a1a, #8a5a2a, #5a3a1a);
+  border-radius: 5px;
+}
+
+.branch {
+  position: absolute;
+  height: 16px;
+  background: linear-gradient(90deg, #3a6a1a, #4a8a2a);
+  border-radius: 8px;
+  z-index: 2;
+}
+
+.climber {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  border-radius: 50%;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: bottom 0.15s ease;
+}
+
+.leaf-coin {
+  position: absolute;
+  font-size: 1.5em;
+  z-index: 3;
+  animation: leafSway 2s ease-in-out infinite;
+}
+
+@keyframes leafSway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+/* ===== GAME 4: ICE CREAM MATCH ===== */
+#icecream-game {
+  background: linear-gradient(180deg, #1a2a4e 0%, #1a1a2e 100%);
+}
+
+.icecream-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 16px;
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.icecream-card {
+  aspect-ratio: 1;
+  background: rgba(255,255,255,0.08);
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2em;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.icecream-card:active { transform: scale(0.92); }
+
+.icecream-card.flipped {
+  background: rgba(196, 77, 255, 0.15);
+  border-color: var(--purple);
+}
+
+.icecream-card.matched {
+  background: rgba(77, 255, 136, 0.15);
+  border-color: var(--green);
+  pointer-events: none;
+}
+
+.icecream-card .card-face {
+  display: none;
+}
+
+.icecream-card.flipped .card-face,
+.icecream-card.matched .card-face {
+  display: block;
+}
+
+.icecream-card .card-back {
+  display: block;
+}
+
+.icecream-card.flipped .card-back,
+.icecream-card.matched .card-back {
+  display: none;
+}
+
+/* ===== GAME 5: SELFIE STARS ===== */
+#selfie-game {
+  background: linear-gradient(180deg, #2e1a4e 0%, #1a1a2e 100%);
+}
+
+.selfie-area {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.selfie-frame {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid var(--pink);
+  box-shadow: 0 0 40px rgba(255, 107, 157, 0.3);
+  z-index: 2;
+}
+
+.selfie-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sparkle {
+  position: absolute;
+  cursor: pointer;
+  font-size: 1.8em;
+  z-index: 5;
+  animation: sparkleIn 0.3s ease;
+  filter: drop-shadow(0 0 8px rgba(255, 216, 77, 0.6));
+  transition: transform 0.15s;
+}
+
+.sparkle:active { transform: scale(1.4); }
+
+@keyframes sparkleIn {
+  0% { transform: scale(0) rotate(0deg); opacity: 0; }
+  100% { transform: scale(1) rotate(180deg); opacity: 1; }
+}
+
+@keyframes sparkleOut {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* ===== RESULT OVERLAY ===== */
+.result-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 50;
+  text-align: center;
+  padding: 20px;
+}
+
+.result-overlay.show { display: flex; }
+
+.result-emoji { font-size: 4em; }
+
+.result-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.8em;
+  background: linear-gradient(135deg, var(--yellow), var(--orange));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.result-coins {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.4em;
+  color: var(--yellow);
+}
+
+.result-message {
+  color: #aab;
+  font-size: 0.9em;
+  max-width: 280px;
+}
+
+.result-btn {
+  background: linear-gradient(135deg, var(--green), #2db86a);
+  border: none;
+  color: white;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.1em;
+  padding: 12px 36px;
+  border-radius: 30px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.result-btn:active { transform: scale(0.95); }
+
+/* ===== GUITAR SHOP SCREEN ===== */
+#shop-screen {
+  background: linear-gradient(180deg, #2e1a1a 0%, #1a1a2e 100%);
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+  text-align: center;
+}
+
+.shop-guitar {
+  font-size: 6em;
+  animation: float 3s ease-in-out infinite;
+}
+
+.shop-price {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.8em;
+  color: var(--yellow);
+}
+
+.shop-your-coins {
+  color: #aab;
+  font-size: 1em;
+}
+
+.buy-btn {
+  background: linear-gradient(135deg, var(--green), #2db86a);
+  border: none;
+  color: white;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.3em;
+  padding: 14px 44px;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(77, 255, 136, 0.3);
+}
+
+.buy-btn:active { transform: scale(0.95); }
+
+.buy-btn:disabled {
+  background: #444;
+  box-shadow: none;
+  cursor: default;
+}
+
+.shop-back {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: white;
+  font-size: 1em;
+  padding: 10px 28px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* ===== WIN SCREEN ===== */
+#win-screen {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2e1a4e 50%, #1a1a2e 100%);
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+  text-align: center;
+}
+
+.win-photo {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--yellow);
+  box-shadow: 0 0 40px rgba(255, 216, 77, 0.5);
+  animation: float 3s ease-in-out infinite;
+}
+
+.win-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2em;
+  background: linear-gradient(135deg, var(--yellow), var(--orange), var(--pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.win-guitar { font-size: 5em; }
+
+.win-message {
+  color: #ccd;
+  font-size: 1em;
+  max-width: 300px;
+  line-height: 1.5;
+}
+
+.win-confetti {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  animation: confettiFall var(--dur) linear forwards;
+}
+
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ===== COIN POPUP ===== */
+.coin-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Fredoka One', cursive;
+  font-size: 2em;
+  color: var(--yellow);
+  pointer-events: none;
+  z-index: 100;
+  animation: coinPop 0.8s ease forwards;
+}
+
+@keyframes coinPop {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  50% { transform: translate(-50%, -80%) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%, -120%) scale(0.8); opacity: 0; }
+}
+
+/* ===== DAD MESSAGE ===== */
+.dad-message {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  border: 2px solid var(--pink);
+  border-radius: 16px;
+  padding: 12px 20px;
+  max-width: 300px;
+  text-align: center;
+  z-index: 100;
+  font-size: 0.85em;
+  color: #dde;
+  animation: slideUp 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+@keyframes slideUp {
+  0% { transform: translateX(-50%) translateY(20px); opacity: 0; }
+  100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+.dad-message .dad-label {
+  color: var(--pink);
+  font-weight: 800;
+  font-size: 0.8em;
+  margin-bottom: 4px;
+}
+</style>
+</head>
+<body>
+
+<!-- ===== TITLE SCREEN ===== -->
+<div id="title-screen" class="screen active">
+  <div class="title-stars" id="stars-container"></div>
+  <img src="images/hannah-selfie.png" class="title-photo" alt="Troll">
+  <div class="title-text">
+    <h1>Troll's Guitar Quest</h1>
+    <p>Help Hannah earn enough coins to buy her dream guitar!</p>
+  </div>
+  <button class="play-btn" onclick="startGame()">PLAY</button>
+</div>
+
+<!-- ===== HUB SCREEN ===== -->
+<div id="hub-screen" class="screen">
+  <div class="hub-header">
+    <div class="coin-display">
+      <span class="coin-icon">&#x1FA99;</span>
+      <span class="coin-amount" id="hub-coins">0</span>
+    </div>
+    <div class="guitar-progress">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
+      </div>
+      <span class="guitar-icon">&#127928;</span>
+    </div>
+  </div>
+  <div class="hub-title">Choose Your Quest!</div>
+  <div class="quest-grid" id="quest-grid"></div>
+</div>
+
+<!-- ===== NOODLE STACKER ===== -->
+<div id="noodle-game" class="screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goToHub()">&#x2190;</button>
+    <div class="game-timer" id="noodle-timer">30s</div>
+    <div class="game-coins">&#x1FA99; <span id="noodle-coins">0</span></div>
+  </div>
+  <div class="game-instruction">Tap DROP to stack the noodle packets!</div>
+  <div class="game-area">
+    <div class="noodle-stack-area" id="noodle-area"></div>
+    <div class="tap-zone">
+      <button class="tap-btn" id="noodle-drop-btn">DROP!</button>
+    </div>
+  </div>
+  <div class="result-overlay" id="noodle-result">
+    <div class="result-emoji">&#127836;</div>
+    <div class="result-title" id="noodle-result-title">Nice Stacking!</div>
+    <div class="result-coins" id="noodle-result-coins">+0 coins</div>
+    <div class="result-message">Those noodle packets aren't going to stack themselves!</div>
+    <button class="result-btn" onclick="goToHub()">Back to Map</button>
+  </div>
+</div>
+
+<!-- ===== FRY CATCHER ===== -->
+<div id="fry-game" class="screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goToHub()">&#x2190;</button>
+    <div class="game-timer" id="fry-timer">30s</div>
+    <div class="game-coins">&#x1FA99; <span id="fry-coins">0</span></div>
+  </div>
+  <div class="game-instruction">Slide to catch the falling fries!</div>
+  <div class="game-area">
+    <div class="fry-area" id="fry-area">
+      <div class="fry-catcher" id="fry-catcher">&#127839;</div>
+    </div>
+  </div>
+  <div class="result-overlay" id="fry-result">
+    <div class="result-emoji">&#127839;</div>
+    <div class="result-title" id="fry-result-title">Fry Master!</div>
+    <div class="result-coins" id="fry-result-coins">+0 coins</div>
+    <div class="result-message">Dad would be proud of those catching skills!</div>
+    <button class="result-btn" onclick="goToHub()">Back to Map</button>
+  </div>
+</div>
+
+<!-- ===== TREE CLIMBER ===== -->
+<div id="climb-game" class="screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goToHub()">&#x2190;</button>
+    <div class="game-timer" id="climb-timer">30s</div>
+    <div class="game-coins">&#x1FA99; <span id="climb-coins">0</span></div>
+  </div>
+  <div class="game-instruction">Tap LEFT or RIGHT to dodge branches and collect coins!</div>
+  <div class="game-area">
+    <div class="climb-area" id="climb-area">
+      <div class="tree-trunk"></div>
+      <div class="climber" id="climber">&#128567;</div>
+    </div>
+    <div class="tap-zone" style="display:flex; gap:20px;">
+      <button class="tap-btn" onclick="moveClimber('left')" style="padding:14px 30px;">&#x2190; LEFT</button>
+      <button class="tap-btn" onclick="moveClimber('right')" style="padding:14px 30px;">RIGHT &#x2192;</button>
+    </div>
+  </div>
+  <div class="result-overlay" id="climb-result">
+    <div class="result-emoji">&#127795;</div>
+    <div class="result-title" id="climb-result-title">Great Climbing!</div>
+    <div class="result-coins" id="climb-result-coins">+0 coins</div>
+    <div class="result-message">You and Terror would be proud of that climb!</div>
+    <button class="result-btn" onclick="goToHub()">Back to Map</button>
+  </div>
+</div>
+
+<!-- ===== ICE CREAM MATCH ===== -->
+<div id="icecream-game" class="screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goToHub()">&#x2190;</button>
+    <div class="game-timer" id="icecream-timer">60s</div>
+    <div class="game-coins">&#x1FA99; <span id="icecream-coins">0</span></div>
+  </div>
+  <div class="game-instruction">Match the ice cream pairs!</div>
+  <div class="game-area" style="display:flex; align-items:center; justify-content:center;">
+    <div class="icecream-grid" id="icecream-grid"></div>
+  </div>
+  <div class="result-overlay" id="icecream-result">
+    <div class="result-emoji">&#127846;</div>
+    <div class="result-title" id="icecream-result-title">Sweet Matching!</div>
+    <div class="result-coins" id="icecream-result-coins">+0 coins</div>
+    <div class="result-message">Brain freeze from all that ice cream matching!</div>
+    <button class="result-btn" onclick="goToHub()">Back to Map</button>
+  </div>
+</div>
+
+<!-- ===== SELFIE STARS ===== -->
+<div id="selfie-game" class="screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goToHub()">&#x2190;</button>
+    <div class="game-timer" id="selfie-timer">25s</div>
+    <div class="game-coins">&#x1FA99; <span id="selfie-coins">0</span></div>
+  </div>
+  <div class="game-instruction">Tap the sparkles before they disappear!</div>
+  <div class="game-area">
+    <div class="selfie-area" id="selfie-area">
+      <div class="selfie-frame">
+        <img src="images/hannah-selfie.png" alt="Troll">
+      </div>
+    </div>
+  </div>
+  <div class="result-overlay" id="selfie-result">
+    <div class="result-emoji">&#x2728;</div>
+    <div class="result-title" id="selfie-result-title">Sparkle Queen!</div>
+    <div class="result-coins" id="selfie-result-coins">+0 coins</div>
+    <div class="result-message">Those selfie skills are unmatched!</div>
+    <button class="result-btn" onclick="goToHub()">Back to Map</button>
+  </div>
+</div>
+
+<!-- ===== GUITAR SHOP ===== -->
+<div id="shop-screen" class="screen">
+  <button class="back-btn" onclick="goToHub()" style="position:absolute;top:16px;left:16px;">&#x2190;</button>
+  <div class="shop-guitar">&#127928;</div>
+  <div style="font-family:'Fredoka One',cursive;font-size:1.4em;color:var(--pink);">Troll's Dream Guitar</div>
+  <div class="shop-price">500 &#x1FA99;</div>
+  <div class="shop-your-coins">You have: <span id="shop-coins-display">0</span> &#x1FA99;</div>
+  <button class="buy-btn" id="buy-guitar-btn" onclick="buyGuitar()">BUY GUITAR</button>
+  <button class="shop-back" onclick="goToHub()">Keep Earning</button>
+</div>
+
+<!-- ===== WIN SCREEN ===== -->
+<div id="win-screen" class="screen">
+  <div class="win-confetti" id="confetti-container"></div>
+  <img src="images/hannah-ramen.png" class="win-photo" alt="Troll">
+  <div class="win-title">YOU DID IT, TROLL!</div>
+  <div class="win-guitar">&#127928;</div>
+  <div class="win-message">
+    You earned enough coins to buy your dream guitar! Dad's so proud of you.
+    Now go learn some epic songs and maybe serenade Terror until she begs you to stop.
+    <br><br>Love you loads, Troll &#x2764;&#xFE0F;
+    <br>- Dad
+  </div>
+  <button class="play-btn" onclick="resetGame()" style="font-size:1em;padding:12px 30px;">Play Again</button>
+</div>
+
+<script>
+// ===== GAME STATE =====
+let coins = 0;
+const GUITAR_COST = 500;
+let currentGame = null;
+
+// Save/load
+function saveGame() {
+  localStorage.setItem('trollGuitarQuest', JSON.stringify({
+    coins,
+    questsCompleted: quests.map(q => q.completed),
+    bestScores: quests.map(q => q.bestScore || 0)
+  }));
+}
+
+function loadGame() {
+  const data = localStorage.getItem('trollGuitarQuest');
+  if (data) {
+    const parsed = JSON.parse(data);
+    coins = parsed.coins || 0;
+    if (parsed.questsCompleted) {
+      parsed.questsCompleted.forEach((c, i) => { if (quests[i]) quests[i].completed = c; });
+    }
+    if (parsed.bestScores) {
+      parsed.bestScores.forEach((s, i) => { if (quests[i]) quests[i].bestScore = s; });
+    }
+  }
+}
+
+// ===== QUEST DEFINITIONS =====
+const quests = [
+  {
+    id: 'noodle',
+    name: 'Noodle Stacker',
+    desc: 'Stack ramen packets!',
+    photo: 'images/hannah-ramen.png',
+    reward: '10-50',
+    unlocked: true,
+    completed: false,
+    bestScore: 0,
+    gameId: 'noodle-game',
+    start: startNoodleGame
+  },
+  {
+    id: 'fry',
+    name: 'Fry Catcher',
+    desc: 'Catch falling fries!',
+    photo: 'images/hannah-mcdonalds.png',
+    reward: '10-60',
+    unlocked: true,
+    completed: false,
+    bestScore: 0,
+    gameId: 'fry-game',
+    start: startFryGame
+  },
+  {
+    id: 'climb',
+    name: 'Tree Climber',
+    desc: 'Climb and collect!',
+    photo: 'images/hannah-adventure.png',
+    reward: '10-40',
+    unlocked: true,
+    completed: false,
+    bestScore: 0,
+    gameId: 'climb-game',
+    start: startClimbGame
+  },
+  {
+    id: 'icecream',
+    name: 'Ice Cream Match',
+    desc: 'Match the pairs!',
+    photo: 'images/hannah-icecream.png',
+    reward: '20-80',
+    unlocked: true,
+    completed: false,
+    bestScore: 0,
+    gameId: 'icecream-game',
+    start: startIceCreamGame
+  },
+  {
+    id: 'selfie',
+    name: 'Selfie Sparkles',
+    desc: 'Tap the sparkles!',
+    photo: 'images/hannah-selfie.png',
+    reward: '10-50',
+    unlocked: true,
+    completed: false,
+    bestScore: 0,
+    gameId: 'selfie-game',
+    start: startSelfieGame
+  }
+];
+
+// ===== SCREEN MANAGEMENT =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ===== TITLE SCREEN =====
+function createStars() {
+  const container = document.getElementById('stars-container');
+  for (let i = 0; i < 50; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.cssText = `
+      left: ${Math.random() * 100}%;
+      top: ${Math.random() * 100}%;
+      width: ${Math.random() * 3 + 1}px;
+      height: ${Math.random() * 3 + 1}px;
+      --dur: ${Math.random() * 3 + 2}s;
+      animation-delay: ${Math.random() * 3}s;
+    `;
+    container.appendChild(star);
+  }
+}
+createStars();
+
+function startGame() {
+  loadGame();
+  showScreen('hub-screen');
+  renderHub();
+  showDadMessage("Go get 'em, Troll! Each quest earns you coins toward your guitar!");
+}
+
+// ===== HUB SCREEN =====
+function renderHub() {
+  document.getElementById('hub-coins').textContent = coins;
+  const pct = Math.min((coins / GUITAR_COST) * 100, 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+
+  const grid = document.getElementById('quest-grid');
+  grid.innerHTML = '';
+
+  quests.forEach(q => {
+    const card = document.createElement('div');
+    card.className = `quest-card ${q.completed ? 'completed' : 'unlocked'}`;
+    card.innerHTML = `
+      <img src="${q.photo}" class="quest-photo" alt="${q.name}">
+      <div class="quest-name">${q.name}</div>
+      <div class="quest-reward">${q.reward} &#x1FA99;</div>
+      <div class="quest-badge">${q.completed ? '&#x2705; Best: ' + q.bestScore : '&#127918; PLAY'}</div>
+    `;
+    card.onclick = () => launchQuest(q);
+    grid.appendChild(card);
+  });
+
+  // Guitar shop card
+  const shop = document.createElement('div');
+  shop.className = 'guitar-shop-card';
+  shop.innerHTML = `
+    <div class="shop-title">&#127928; Guitar Shop</div>
+    <div class="shop-desc">${coins >= GUITAR_COST ? 'You can afford it! Go buy your guitar!' : `${GUITAR_COST - coins} more coins needed!`}</div>
+  `;
+  shop.onclick = () => openShop();
+  grid.appendChild(shop);
+}
+
+function goToHub() {
+  if (currentGame) {
+    clearInterval(currentGame.timer);
+    currentGame = null;
+  }
+  showScreen('hub-screen');
+  renderHub();
+}
+
+function launchQuest(quest) {
+  showScreen(quest.gameId);
+  quest.start();
+}
+
+// ===== DAD MESSAGES =====
+const dadMessages = [
+  "You're smashing it, Troll!",
+  "That guitar is getting closer!",
+  "Terror would be jealous of those skills!",
+  "Dad's proud of you, kiddo!",
+  "Keep going — rock star in the making!",
+  "When you get that guitar, play me something epic!",
+  "You're better at this than Dad. Don't tell anyone.",
+  "Saving up is hard but you're doing amazing!",
+  "Almost there! The guitar can practically hear you coming!",
+];
+
+function showDadMessage(msg) {
+  const existing = document.querySelector('.dad-message');
+  if (existing) existing.remove();
+
+  const div = document.createElement('div');
+  div.className = 'dad-message';
+  div.innerHTML = `<div class="dad-label">&#x1F9D4; Dad says:</div>${msg || dadMessages[Math.floor(Math.random() * dadMessages.length)]}`;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 3500);
+}
+
+function showCoinPopup(amount) {
+  const div = document.createElement('div');
+  div.className = 'coin-popup';
+  div.textContent = `+${amount} &#x1FA99;`;
+  div.innerHTML = `+${amount} &#x1FA99;`;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 800);
+}
+
+function awardCoins(amount, questId) {
+  coins += amount;
+  const quest = quests.find(q => q.id === questId);
+  if (quest) {
+    quest.completed = true;
+    if (amount > (quest.bestScore || 0)) quest.bestScore = amount;
+  }
+  saveGame();
+}
+
+// ===== GAME 1: NOODLE STACKER =====
+function startNoodleGame() {
+  const area = document.getElementById('noodle-area');
+  area.innerHTML = '';
+  document.getElementById('noodle-result').classList.remove('show');
+
+  let gameCoins = 0;
+  let stackHeight = 0;
+  let timeLeft = 30;
+  let noodleSpeed = 1.5;
+  const noodles = [];
+
+  document.getElementById('noodle-coins').textContent = '0';
+  document.getElementById('noodle-timer').textContent = '30s';
+
+  // Platform
+  const platform = document.createElement('div');
+  platform.style.cssText = `position:absolute;bottom:80px;left:50%;transform:translateX(-50%);width:90px;height:8px;background:var(--purple);border-radius:4px;`;
+  area.appendChild(platform);
+
+  // Moving noodle
+  let movingNoodle = null;
+  let moveDir = 1;
+  let moveX = 50;
+
+  function createMovingNoodle() {
+    if (movingNoodle) movingNoodle.remove();
+    movingNoodle = document.createElement('div');
+    movingNoodle.className = 'noodle-packet';
+    const bottomPos = 90 + stackHeight * 52;
+    movingNoodle.style.cssText = `position:absolute;bottom:${bottomPos}px;left:${moveX}%;transform:translateX(-50%);`;
+    movingNoodle.textContent = '🍜';
+    area.appendChild(movingNoodle);
+    moveX = 10;
+    moveDir = 1;
+  }
+
+  createMovingNoodle();
+
+  // Move animation
+  const moveInterval = setInterval(() => {
+    moveX += moveDir * (2 + stackHeight * 0.3);
+    if (moveX > 85) moveDir = -1;
+    if (moveX < 15) moveDir = 1;
+    if (movingNoodle) {
+      movingNoodle.style.left = moveX + '%';
+    }
+  }, 30);
+
+  // Drop button
+  document.getElementById('noodle-drop-btn').onclick = () => {
+    if (!movingNoodle) return;
+
+    // Check alignment (center is at 50%)
+    const diff = Math.abs(moveX - 50);
+
+    if (diff < 20) {
+      // Successful stack
+      const placed = document.createElement('div');
+      placed.className = 'noodle-packet';
+      const bottomPos = 90 + stackHeight * 52;
+      placed.style.cssText = `position:absolute;bottom:${bottomPos}px;left:50%;transform:translateX(-50%);`;
+      placed.textContent = '🍜';
+      area.appendChild(placed);
+
+      stackHeight++;
+      const earned = diff < 8 ? 10 : 5;
+      gameCoins += earned;
+      document.getElementById('noodle-coins').textContent = gameCoins;
+      showCoinPopup(earned);
+
+      createMovingNoodle();
+    } else {
+      // Miss — noodle falls off
+      movingNoodle.style.transition = 'all 0.5s ease';
+      movingNoodle.style.bottom = '-60px';
+      movingNoodle.style.opacity = '0';
+      setTimeout(() => createMovingNoodle(), 300);
+    }
+  };
+
+  // Timer
+  const timer = setInterval(() => {
+    timeLeft--;
+    document.getElementById('noodle-timer').textContent = timeLeft + 's';
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      clearInterval(moveInterval);
+      endNoodleGame(gameCoins);
+    }
+  }, 1000);
+
+  currentGame = { timer, extra: moveInterval };
+}
+
+function endNoodleGame(earned) {
+  if (currentGame && currentGame.extra) clearInterval(currentGame.extra);
+  awardCoins(earned, 'noodle');
+  document.getElementById('noodle-result-title').textContent = earned > 30 ? 'Epic Stacking!' : earned > 15 ? 'Nice Stacking!' : 'Good Try!';
+  document.getElementById('noodle-result-coins').textContent = `+${earned} coins`;
+  document.getElementById('noodle-result').classList.add('show');
+  if (earned > 20) showDadMessage();
+}
+
+// ===== GAME 2: FRY CATCHER =====
+function startFryGame() {
+  const area = document.getElementById('fry-area');
+  const catcher = document.getElementById('fry-catcher');
+
+  // Clear old fries
+  area.querySelectorAll('.fry').forEach(f => f.remove());
+  document.getElementById('fry-result').classList.remove('show');
+
+  let gameCoins = 0;
+  let timeLeft = 30;
+  let catcherX = 50;
+
+  document.getElementById('fry-coins').textContent = '0';
+  document.getElementById('fry-timer').textContent = '30s';
+  catcher.style.left = 'calc(50% - 35px)';
+
+  // Touch/mouse controls
+  const fryArea = area;
+  let touching = false;
+
+  function moveCatcher(clientX) {
+    const rect = fryArea.getBoundingClientRect();
+    const pct = ((clientX - rect.left) / rect.width) * 100;
+    catcherX = Math.max(10, Math.min(90, pct));
+    catcher.style.left = `calc(${catcherX}% - 35px)`;
+  }
+
+  fryArea.ontouchstart = fryArea.ontouchmove = (e) => {
+    e.preventDefault();
+    moveCatcher(e.touches[0].clientX);
+  };
+  fryArea.onmousemove = (e) => moveCatcher(e.clientX);
+
+  // Spawn fries
+  const fryEmojis = ['🍟', '🍟', '🍟', '🍔', '🥤', '🍟'];
+  const badEmojis = ['🧅', '🥦'];
+
+  const spawnInterval = setInterval(() => {
+    const isBad = Math.random() < 0.15;
+    const fry = document.createElement('div');
+    fry.className = 'fry';
+    fry.textContent = isBad ? badEmojis[Math.floor(Math.random() * badEmojis.length)] : fryEmojis[Math.floor(Math.random() * fryEmojis.length)];
+    fry.dataset.bad = isBad;
+    fry.style.left = (Math.random() * 80 + 10) + '%';
+    fry.style.top = '-40px';
+    area.appendChild(fry);
+
+    let y = -40;
+    const speed = 2 + Math.random() * 2;
+    const fallInterval = setInterval(() => {
+      y += speed;
+      fry.style.top = y + 'px';
+
+      // Check catch
+      const fryRect = fry.getBoundingClientRect();
+      const catchRect = catcher.getBoundingClientRect();
+
+      if (fryRect.bottom > catchRect.top && fryRect.top < catchRect.bottom &&
+          fryRect.left < catchRect.right && fryRect.right > catchRect.left) {
+        clearInterval(fallInterval);
+        fry.remove();
+        if (isBad) {
+          gameCoins = Math.max(0, gameCoins - 5);
+          showCoinPopup(-5);
+        } else {
+          const val = fry.textContent === '🍔' ? 5 : fry.textContent === '🥤' ? 3 : 2;
+          gameCoins += val;
+          showCoinPopup(val);
+        }
+        document.getElementById('fry-coins').textContent = gameCoins;
+      }
+
+      // Off screen
+      if (y > area.clientHeight + 40) {
+        clearInterval(fallInterval);
+        fry.remove();
+      }
+    }, 20);
+  }, 500);
+
+  const timer = setInterval(() => {
+    timeLeft--;
+    document.getElementById('fry-timer').textContent = timeLeft + 's';
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      clearInterval(spawnInterval);
+      area.querySelectorAll('.fry').forEach(f => f.remove());
+      fryArea.ontouchstart = fryArea.ontouchmove = fryArea.onmousemove = null;
+      endFryGame(gameCoins);
+    }
+  }, 1000);
+
+  currentGame = { timer, extra: spawnInterval };
+}
+
+function endFryGame(earned) {
+  if (currentGame && currentGame.extra) clearInterval(currentGame.extra);
+  awardCoins(earned, 'fry');
+  document.getElementById('fry-result-title').textContent = earned > 40 ? 'Fry Legend!' : earned > 20 ? 'Fry Master!' : 'Good Catching!';
+  document.getElementById('fry-result-coins').textContent = `+${earned} coins`;
+  document.getElementById('fry-result').classList.add('show');
+  if (earned > 15) showDadMessage("Dad says: Better than me at McDonald's, and that's saying something!");
+}
+
+// ===== GAME 3: TREE CLIMBER =====
+let climberSide = 'center';
+
+function startClimbGame() {
+  const area = document.getElementById('climb-area');
+  const climber = document.getElementById('climber');
+
+  // Clear old stuff
+  area.querySelectorAll('.branch, .leaf-coin').forEach(e => e.remove());
+  document.getElementById('climb-result').classList.remove('show');
+
+  let gameCoins = 0;
+  let timeLeft = 30;
+  let height = 0;
+  climberSide = 'center';
+  climber.style.bottom = '100px';
+  climber.style.left = '50%';
+
+  document.getElementById('climb-coins').textContent = '0';
+  document.getElementById('climb-timer').textContent = '30s';
+
+  const branches = [];
+  const coinElements = [];
+
+  // Generate obstacles and coins
+  function spawnContent() {
+    const areaH = area.clientHeight;
+
+    // Branch
+    if (Math.random() < 0.4) {
+      const branch = document.createElement('div');
+      branch.className = 'branch';
+      const side = Math.random() < 0.5 ? 'left' : 'right';
+      const w = 60 + Math.random() * 80;
+      branch.style.width = w + 'px';
+      branch.style.top = '-20px';
+      if (side === 'left') {
+        branch.style.left = '0';
+      } else {
+        branch.style.right = '0';
+      }
+      branch.dataset.side = side;
+      area.appendChild(branch);
+      branches.push(branch);
+    }
+
+    // Coin
+    if (Math.random() < 0.5) {
+      const coin = document.createElement('div');
+      coin.className = 'leaf-coin';
+      coin.textContent = Math.random() < 0.3 ? '⭐' : '🪙';
+      coin.dataset.value = coin.textContent === '⭐' ? 5 : 2;
+      coin.style.top = '-30px';
+      const xPos = 20 + Math.random() * 60;
+      coin.style.left = xPos + '%';
+      area.appendChild(coin);
+      coinElements.push(coin);
+    }
+  }
+
+  const scrollSpeed = 3;
+  const gameLoop = setInterval(() => {
+    height += scrollSpeed;
+
+    // Move everything down
+    branches.forEach((b, i) => {
+      const top = parseFloat(b.style.top) + scrollSpeed;
+      b.style.top = top + 'px';
+      if (top > area.clientHeight) {
+        b.remove();
+        branches.splice(i, 1);
+      }
+    });
+
+    coinElements.forEach((c, i) => {
+      const top = parseFloat(c.style.top) + scrollSpeed;
+      c.style.top = top + 'px';
+
+      // Check collection
+      const climberBottom = parseFloat(climber.style.bottom);
+      const coinTop = area.clientHeight - top;
+      if (Math.abs(coinTop - climberBottom) < 30) {
+        const climberLeft = climberSide === 'left' ? 25 : climberSide === 'right' ? 75 : 50;
+        const coinLeft = parseFloat(c.style.left);
+        if (Math.abs(climberLeft - coinLeft) < 20) {
+          const val = parseInt(c.dataset.value);
+          gameCoins += val;
+          document.getElementById('climb-coins').textContent = gameCoins;
+          showCoinPopup(val);
+          c.remove();
+          coinElements.splice(i, 1);
+        }
+      }
+
+      if (top > area.clientHeight) {
+        c.remove();
+        coinElements.splice(i, 1);
+      }
+    });
+
+    // Spawn new stuff
+    if (Math.random() < 0.08) spawnContent();
+
+  }, 30);
+
+  const timer = setInterval(() => {
+    timeLeft--;
+    document.getElementById('climb-timer').textContent = timeLeft + 's';
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      clearInterval(gameLoop);
+      endClimbGame(gameCoins);
+    }
+  }, 1000);
+
+  currentGame = { timer, extra: gameLoop };
+}
+
+function moveClimber(dir) {
+  const climber = document.getElementById('climber');
+  if (dir === 'left') {
+    climberSide = climberSide === 'right' ? 'center' : 'left';
+  } else {
+    climberSide = climberSide === 'left' ? 'center' : 'right';
+  }
+  const x = climberSide === 'left' ? '25%' : climberSide === 'right' ? '75%' : '50%';
+  climber.style.left = x;
+}
+
+function endClimbGame(earned) {
+  if (currentGame && currentGame.extra) clearInterval(currentGame.extra);
+  awardCoins(earned, 'climb');
+  document.getElementById('climb-result-title').textContent = earned > 30 ? 'Tree Champion!' : earned > 15 ? 'Great Climbing!' : 'Good Effort!';
+  document.getElementById('climb-result-coins').textContent = `+${earned} coins`;
+  document.getElementById('climb-result').classList.add('show');
+  if (earned > 10) showDadMessage("That climbing was almost as good as the real thing!");
+}
+
+// ===== GAME 4: ICE CREAM MATCH =====
+function startIceCreamGame() {
+  const grid = document.getElementById('icecream-grid');
+  grid.innerHTML = '';
+  document.getElementById('icecream-result').classList.remove('show');
+
+  let gameCoins = 0;
+  let timeLeft = 60;
+  let flipped = [];
+  let matched = 0;
+  let canFlip = true;
+
+  document.getElementById('icecream-coins').textContent = '0';
+  document.getElementById('icecream-timer').textContent = '60s';
+
+  const emojis = ['🍦', '🍧', '🍨', '🎂', '🍩', '🍪', '🧁', '🍰'];
+  const pairs = [...emojis, ...emojis];
+
+  // Shuffle
+  for (let i = pairs.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
+  }
+
+  pairs.forEach((emoji, idx) => {
+    const card = document.createElement('div');
+    card.className = 'icecream-card';
+    card.innerHTML = `<span class="card-back">?</span><span class="card-face">${emoji}</span>`;
+    card.dataset.emoji = emoji;
+    card.dataset.idx = idx;
+
+    card.onclick = () => {
+      if (!canFlip || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+      card.classList.add('flipped');
+      flipped.push(card);
+
+      if (flipped.length === 2) {
+        canFlip = false;
+        if (flipped[0].dataset.emoji === flipped[1].dataset.emoji) {
+          // Match!
+          flipped.forEach(c => c.classList.add('matched'));
+          matched++;
+          gameCoins += 10;
+          document.getElementById('icecream-coins').textContent = gameCoins;
+          showCoinPopup(10);
+          flipped = [];
+          canFlip = true;
+
+          if (matched === emojis.length) {
+            // Bonus for finishing!
+            const bonus = Math.max(10, timeLeft);
+            gameCoins += bonus;
+            showCoinPopup(bonus);
+            clearInterval(timer);
+            endIceCreamGame(gameCoins);
+          }
+        } else {
+          setTimeout(() => {
+            flipped.forEach(c => c.classList.remove('flipped'));
+            flipped = [];
+            canFlip = true;
+          }, 600);
+        }
+      }
+    };
+
+    grid.appendChild(card);
+  });
+
+  const timer = setInterval(() => {
+    timeLeft--;
+    document.getElementById('icecream-timer').textContent = timeLeft + 's';
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      endIceCreamGame(gameCoins);
+    }
+  }, 1000);
+
+  currentGame = { timer };
+}
+
+function endIceCreamGame(earned) {
+  awardCoins(earned, 'icecream');
+  document.getElementById('icecream-result-title').textContent = earned > 60 ? 'Ice Cream Genius!' : earned > 30 ? 'Sweet Matching!' : 'Tasty Try!';
+  document.getElementById('icecream-result-coins').textContent = `+${earned} coins`;
+  document.getElementById('icecream-result').classList.add('show');
+  if (earned > 30) showDadMessage("Your memory is insane! Must get it from Mum...");
+}
+
+// ===== GAME 5: SELFIE SPARKLES =====
+function startSelfieGame() {
+  const area = document.getElementById('selfie-area');
+
+  // Clear old sparkles
+  area.querySelectorAll('.sparkle').forEach(s => s.remove());
+  document.getElementById('selfie-result').classList.remove('show');
+
+  let gameCoins = 0;
+  let timeLeft = 25;
+
+  document.getElementById('selfie-coins').textContent = '0';
+  document.getElementById('selfie-timer').textContent = '25s';
+
+  const sparkleEmojis = ['✨', '⭐', '💫', '🌟', '💎', '🦋', '🎵', '🎶', '💜', '🩷'];
+
+  function spawnSparkle() {
+    const sparkle = document.createElement('div');
+    sparkle.className = 'sparkle';
+    sparkle.textContent = sparkleEmojis[Math.floor(Math.random() * sparkleEmojis.length)];
+
+    // Position around the selfie
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 100 + Math.random() * 100;
+    const centerX = area.clientWidth / 2;
+    const centerY = area.clientHeight / 2;
+    sparkle.style.left = (centerX + Math.cos(angle) * dist) + 'px';
+    sparkle.style.top = (centerY + Math.sin(angle) * dist) + 'px';
+
+    const value = sparkle.textContent === '💎' ? 5 : sparkle.textContent === '🦋' ? 3 : 2;
+
+    sparkle.onclick = (e) => {
+      e.stopPropagation();
+      gameCoins += value;
+      document.getElementById('selfie-coins').textContent = gameCoins;
+      showCoinPopup(value);
+      sparkle.style.animation = 'sparkleOut 0.3s ease forwards';
+      setTimeout(() => sparkle.remove(), 300);
+    };
+
+    area.appendChild(sparkle);
+
+    // Auto-remove after 2s
+    setTimeout(() => {
+      if (sparkle.parentNode) {
+        sparkle.style.opacity = '0';
+        setTimeout(() => sparkle.remove(), 200);
+      }
+    }, 2000);
+  }
+
+  const spawnInterval = setInterval(() => {
+    spawnSparkle();
+    if (Math.random() < 0.3) spawnSparkle(); // Sometimes spawn two
+  }, 400);
+
+  const timer = setInterval(() => {
+    timeLeft--;
+    document.getElementById('selfie-timer').textContent = timeLeft + 's';
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      clearInterval(spawnInterval);
+      area.querySelectorAll('.sparkle').forEach(s => s.remove());
+      endSelfieGame(gameCoins);
+    }
+  }, 1000);
+
+  currentGame = { timer, extra: spawnInterval };
+}
+
+function endSelfieGame(earned) {
+  if (currentGame && currentGame.extra) clearInterval(currentGame.extra);
+  awardCoins(earned, 'selfie');
+  document.getElementById('selfie-result-title').textContent = earned > 35 ? 'Sparkle Queen!' : earned > 20 ? 'Shiny!' : 'Nice Tapping!';
+  document.getElementById('selfie-result-coins').textContent = `+${earned} coins`;
+  document.getElementById('selfie-result').classList.add('show');
+  if (earned > 15) showDadMessage();
+}
+
+// ===== GUITAR SHOP =====
+function openShop() {
+  showScreen('shop-screen');
+  document.getElementById('shop-coins-display').textContent = coins;
+  const btn = document.getElementById('buy-guitar-btn');
+  btn.disabled = coins < GUITAR_COST;
+  btn.textContent = coins >= GUITAR_COST ? '🎸 BUY GUITAR 🎸' : `Need ${GUITAR_COST - coins} more coins`;
+}
+
+function buyGuitar() {
+  if (coins >= GUITAR_COST) {
+    coins -= GUITAR_COST;
+    saveGame();
+    showWinScreen();
+  }
+}
+
+// ===== WIN SCREEN =====
+function showWinScreen() {
+  showScreen('win-screen');
+
+  // Confetti
+  const container = document.getElementById('confetti-container');
+  container.innerHTML = '';
+  const colors = ['#ff6b9d', '#c44dff', '#4dabff', '#4dff88', '#ffd84d', '#ff8c4d'];
+
+  for (let i = 0; i < 80; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.cssText = `
+      left: ${Math.random() * 100}%;
+      top: -10px;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      --dur: ${Math.random() * 2 + 2}s;
+      animation-delay: ${Math.random() * 2}s;
+      width: ${Math.random() * 8 + 6}px;
+      height: ${Math.random() * 8 + 6}px;
+      border-radius: ${Math.random() < 0.5 ? '50%' : '2px'};
+    `;
+    container.appendChild(piece);
+  }
+}
+
+function resetGame() {
+  coins = 0;
+  quests.forEach(q => { q.completed = false; q.bestScore = 0; });
+  saveGame();
+  showScreen('title-screen');
+}
+</script>
+
+</body>
+</html>
